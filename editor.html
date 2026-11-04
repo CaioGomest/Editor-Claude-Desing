@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SCP Motion Editor</title>
+<link rel="stylesheet" href="style.css?v=9" />
+</head>
+<body>
+  <div id="app">
+   <div id="editor-body">
+    <div id="editor-main">
+    <div id="preview-wrap">
+      <div id="stage-outer">
+        <div id="stage-frame">
+          <div id="stage"></div>
+          <div id="stage-interact">
+            <div id="focus-handle" title="Arraste para mudar o foco" hidden></div>
+            <div id="title-position-handle" title="Arraste para mover o texto" hidden></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="transport">
+      <a id="back-to-projects" href="index.html" title="Voltar para Projetos">&#8592; Projetos</a>
+      <button id="play-btn" title="Espa&#231;o">&#9654;</button>
+      <input id="scrub" type="range" min="0" max="1" step="0.001" value="0" />
+      <input id="time-field" type="text" value="0.000" />
+      <span id="duration-label"></span>
+      <button id="save-btn" title="Salvar (Ctrl+S)">Salvar</button>
+      <button id="download-zip-btn" title="Baixa um ZIP do projeto (o mesmo formato do Importar) pra mandar pro Claude Code">Baixar ZIP</button>
+      <span id="save-status"></span>
+      <button id="export-btn">Exportar</button>
+    </div>
+    <div id="tool-toolbar">
+      <button type="button" class="tool-btn" id="tool-camera" title="C&#226;mera / Ken Burns">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M16 3v18M3 8h5M16 8h5M3 16h5M16 16h5"/></svg>
+        <span>C&#226;mera</span>
+      </button>
+      <button type="button" class="tool-btn" id="tool-transition" title="Transi&#231;&#227;o entre imagens">
+        <svg viewBox="0 0 24 24"><path d="M3 4l9 8-9 8zM21 4l-9 8 9 8z"/></svg>
+        <span>Transi&#231;&#227;o</span>
+      </button>
+      <button type="button" class="tool-btn" id="tool-text" title="Texto">
+        <svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14"/></svg>
+        <span>Texto</span>
+      </button>
+      <button type="button" class="tool-btn" id="tool-audio" title="&#193;udio">
+        <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 5V5L8 10H4z"/><path d="M17 9a5 5 0 010 6"/></svg>
+        <span>&#193;udio</span>
+      </button>
+      <span class="tool-sep"></span>
+      <button type="button" class="tool-btn" id="fx-panel-open-btn" title="Ajustes do v&#237;deo inteiro (glitch, HUD, grao...)">
+        <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.4z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9z"/></svg>
+        <span>Efeitos</span>
+      </button>
+      <button type="button" class="tool-btn" id="tool-split" title="Dividir o plano selecionado no ponto atual do v&#237;deo">
+        <svg viewBox="0 0 24 24"><path d="M6 3v18M18 3v18M3 12h18"/></svg>
+        <span>Dividir</span>
+      </button>
+    </div>
+    </div>
+    <div id="side-panel">
+    <div id="side-panel-title">Propriedades &middot; c&acirc;mera</div>
+
+    <div class="panel-section" id="clip-options" data-tool="camera">
+      <div id="clip-options-empty">Nenhum plano selecionado</div>
+      <div id="clip-options-form" hidden>
+        <div class="co-row">
+          <span id="clip-options-info" class="co-info"></span>
+
+          <div class="co-keyframe">
+            <label>Editando</label>
+            <div class="co-toggle">
+              <button type="button" class="co-kf-btn" data-kf="from">In&#237;cio</button>
+              <button type="button" class="co-kf-btn" data-kf="to">Fim</button>
+            </div>
+          </div>
+
+          <div class="co-field" data-field="zoom">
+            <label>Zoom</label>
+            <input type="range" min="0.9" max="3" step="0.01" />
+            <input type="number" step="0.01" />
+          </div>
+
+          <div class="co-field" data-field="panx">
+            <label>Pan X</label>
+            <input type="range" min="-20" max="20" step="0.5" />
+            <input type="number" step="0.5" />
+          </div>
+
+          <div class="co-field" data-field="offsetX">
+            <label>Offset X</label>
+            <input type="range" min="-100" max="100" step="1" />
+            <input type="number" step="1" />
+          </div>
+          <div class="co-field" data-field="offsetY">
+            <label>Offset Y</label>
+            <input type="range" min="-100" max="100" step="1" />
+            <input type="number" step="1" />
+          </div>
+
+          <div class="co-field" data-field="opX">
+            <label>Foco X</label>
+            <input type="range" min="0" max="100" step="1" />
+            <input type="number" step="1" />
+          </div>
+          <div class="co-field" data-field="opY">
+            <label>Foco Y</label>
+            <input type="range" min="0" max="100" step="1" />
+            <input type="number" step="1" />
+          </div>
+
+          <button id="swap-image-btn">Trocar imagem</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="transition-options" data-tool="transition" hidden>
+      <div class="co-row">
+        <div class="to-field">
+          <label>Dura&#231;&#227;o (s)</label>
+          <input type="text" inputmode="decimal" id="transition-bulk-input" value="0.8" />
+        </div>
+        <button id="transition-bulk-apply">Ativar em todos</button>
+        <button id="transition-bulk-clear">Remover de todos</button>
+      </div>
+    </div>
+
+    <div class="panel-section" id="title-options" data-tool="text" hidden>
+      <div id="title-options-empty">Nenhum texto selecionado</div>
+      <div id="title-options-form" hidden>
+        <div class="co-row">
+          <p class="co-hint">Arraste o texto na tela pra reposicionar. D&#234; dois cliques nele pra editar o conte&#250;do.</p>
+
+          <span class="to-group-label">T&#237;tulo</span>
+          <div class="to-field">
+            <label>Tamanho</label>
+            <input type="number" step="1" min="1" id="title-size-input" />
+          </div>
+          <div class="to-field">
+            <label>Fonte</label>
+            <select id="title-font-input"></select>
+          </div>
+          <div class="to-field">
+            <label>Peso</label>
+            <select id="title-weight-input">
+              <option value="400">Regular</option>
+              <option value="500">M&#233;dio</option>
+              <option value="600">Semibold</option>
+              <option value="700">Bold</option>
+              <option value="800">Extrabold</option>
+              <option value="900">Black</option>
+            </select>
+          </div>
+
+          <span class="to-group-label">Subt&#237;tulo</span>
+          <div class="to-field">
+            <label>Tamanho</label>
+            <input type="number" step="1" min="1" id="title-sub-size-input" />
+          </div>
+          <div class="to-field">
+            <label>Fonte</label>
+            <select id="title-sub-font-input"></select>
+          </div>
+          <div class="to-field">
+            <label>Peso</label>
+            <select id="title-sub-weight-input">
+              <option value="400">Regular</option>
+              <option value="500">M&#233;dio</option>
+              <option value="600">Semibold</option>
+              <option value="700">Bold</option>
+              <option value="800">Extrabold</option>
+              <option value="900">Black</option>
+            </select>
+          </div>
+
+          <span class="to-group-label">Entrada</span>
+          <div class="to-field">
+            <label>Dire&#231;&#227;o</label>
+            <select id="title-in-dir-input">
+              <option value="none">S&#243; fade</option>
+              <option value="up">Subir</option>
+              <option value="down">Descer</option>
+            </select>
+          </div>
+          <div class="to-field">
+            <label>Dura&#231;&#227;o (s)</label>
+            <input type="number" step="0.1" min="0" id="title-in-dur-input" />
+          </div>
+
+          <span class="to-group-label">Sa&#237;da</span>
+          <div class="to-field">
+            <label>Dire&#231;&#227;o</label>
+            <select id="title-out-dir-input">
+              <option value="none">S&#243; fade</option>
+              <option value="up">Subir</option>
+              <option value="down">Descer</option>
+            </select>
+          </div>
+          <div class="to-field">
+            <label>Dura&#231;&#227;o (s)</label>
+            <input type="number" step="0.1" min="0" id="title-out-dur-input" />
+          </div>
+
+          <button id="title-remove-btn" title="Remover este texto">Remover</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="audio-options" data-tool="audio" hidden>
+      <div id="audio-options-empty">Nenhum &#225;udio selecionado</div>
+      <div id="audio-options-form" hidden>
+        <div class="co-row">
+          <span id="audio-options-info" class="co-info"></span>
+          <div class="co-field" data-field="volume">
+            <label>Volume</label>
+            <input type="range" min="0" max="1" step="0.01" id="audio-options-volume-range" />
+            <input type="number" min="0" max="1" step="0.01" id="audio-options-volume-number" />
+          </div>
+          <button id="audio-options-remove-btn">Remover &#225;udio</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="fx-panel" data-tool="effects" hidden>
+      <div class="fx-row" id="tweaks-row">
+        <span class="fx-row-label">Ajustes</span>
+        <div class="fx-field" id="tweak-glitch">
+          <label>Glitch</label>
+          <input type="range" min="0" max="10" step="1" />
+          <input type="number" step="1" />
+        </div>
+        <label class="fx-toggle"><input type="checkbox" id="tweak-captions" /> Legendas</label>
+        <label class="fx-toggle"><input type="checkbox" id="tweak-flashes" /> Flashes</label>
+      </div>
+      <div class="fx-row">
+        <span class="fx-row-label">Camadas de efeito</span>
+        <div id="fx-layers-list"></div>
+      </div>
+      <div class="fx-row" id="hud-editor-row" hidden>
+        <span class="fx-row-label">HUD</span>
+        <div class="fx-field" id="hud-nudge-field">
+          <label title="Move cantos + todas as c&#233;lulas juntos, pra dentro">Recuar tudo</label>
+          <input type="range" min="-80" max="80" step="1" value="0" />
+          <input type="number" step="1" value="0" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="split-options" data-tool="split" hidden>
+      <div class="co-row">
+        <p class="co-hint">Clique num ponto do clipe na timeline pra cort&#225;-lo em dois ali mesmo.</p>
+      </div>
+    </div>
+
+    </div>
+   </div>
+    <div id="timeline">
+      <div id="timeline-ruler">
+        <div id="timeline-ruler-track"></div>
+      </div>
+      <div id="clip-strip">
+        <div class="strip-row-icon" title="Imagem">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 15l5-5 4 4 4-5 5 6"/></svg>
+        </div>
+        <div id="clip-strip-track">
+          <div id="clip-strip-playhead"><div class="strip-playhead-grip" title="Arraste para navegar no v&#237;deo"></div></div>
+        </div>
+      </div>
+      <div id="titles-strip">
+        <div class="strip-row-icon" title="Texto">
+          <svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6"/></svg>
+        </div>
+        <div id="titles-strip-track">
+          <div id="titles-strip-playhead"><div class="strip-playhead-grip" title="Arraste para navegar no v&#237;deo"></div></div>
+        </div>
+      </div>
+      <div id="audio-strip">
+        <div class="strip-row-icon" title="&#193;udio">
+          <svg viewBox="0 0 24 24"><path d="M4 10v4h4l5 5V5L8 10H4z"/><path d="M17 9a5 5 0 010 6"/></svg>
+        </div>
+        <div id="audio-strip-track">
+          <div id="audio-strip-playhead"><div class="strip-playhead-grip" title="Arraste para navegar no v&#237;deo"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="asset-picker" hidden>
+    <div id="asset-picker-panel">
+      <div id="asset-picker-header">
+        <span>Escolher imagem</span>
+        <button id="asset-picker-close" title="Fechar (Esc)">&times;</button>
+      </div>
+      <div id="asset-picker-grid"></div>
+    </div>
+  </div>
+  <input type="file" id="asset-upload-input" accept="image/*" hidden />
+  <input type="file" id="audio-upload-input" accept="audio/*" hidden />
+
+  <div id="export-modal" hidden>
+    <div id="export-panel">
+      <div id="export-header">
+        <span>Exportar</span>
+        <button id="export-close" title="Fechar (Esc)">&times;</button>
+      </div>
+      <div id="export-body">
+        <div class="fx-field">
+          <label>Resolu&#231;&#227;o</label>
+          <select id="export-scale">
+            <option value="1">1x &#8212; original</option>
+            <option value="2">2x &#8212; ~4K vertical</option>
+            <option value="4">4x &#8212; ultra</option>
+          </select>
+        </div>
+        <div id="export-res-label" class="co-info"></div>
+        <p id="export-hint">Renderiza o v&#237;deo quadro a quadro e, no fim, gera o MP4 pra baixar. V&#237;deos longos demoram &#8212; o link aparece aqui quando terminar.</p>
+        <div id="export-actions">
+          <button id="export-sequence-btn">Exportar v&#237;deo</button>
+          <button id="export-cancel-btn" hidden>Cancelar</button>
+        </div>
+        <div id="export-status"></div>
+        <div id="export-history">
+          <div id="export-history-title">V&#237;deos salvos neste projeto</div>
+          <div id="export-history-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js?v=4"></script>
+  <script src="app.js?v=6"></script>
+</body>
+</html>

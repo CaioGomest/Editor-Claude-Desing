@@ -1,0 +1,6 @@
+*.log
+
+# User project content (videos being edited) — lives on the server only,
+# not versioned here. Includes exported MP4s, which can be hundreds of MB
+# to multiple GB and would blow past GitHub's file size limits.
+/projects/

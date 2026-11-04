@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Projetos &#8212; SCP Motion Editor</title>
+<link rel="stylesheet" href="style.css?v=9" />
+</head>
+<body>
+  <div id="projects-page">
+    <div id="projects-header">
+      <div id="projects-brand"><span id="projects-brand-dot"></span>SCP MOTION EDITOR</div>
+      <div id="projects-header-actions">
+        <span id="import-status"></span>
+        <button id="ai-howto-btn" title="Como pedir um projeto pra IA">?</button>
+        <button id="import-zip-btn">+ Importar ZIP</button>
+      </div>
+    </div>
+    <div id="projects-count"></div>
+    <div id="projects-grid"></div>
+  </div>
+  <input type="file" id="zip-upload-input" accept=".zip" hidden />
+
+  <div id="download-modal" hidden>
+    <div id="download-panel">
+      <div id="download-header">
+        <span id="download-title">Baixar</span>
+        <button id="download-close" type="button">&times;</button>
+      </div>
+      <div id="download-body">
+        <div class="download-section">
+          <div class="download-section-label">V&#237;deo (MP4)</div>
+          <div id="download-mp4-list"></div>
+        </div>
+        <div class="download-section">
+          <div class="download-section-label">Projeto (.zip)</div>
+          <p class="co-hint">Cont&#233;m o project.json atualizado com suas edi&#231;&#245;es + os assets &#8212; pra reabrir aqui ou mandar pra uma IA continuar editando.</p>
+          <button id="download-zip-btn" type="button">Baixar .zip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ai-howto-modal" hidden>
+    <div id="ai-howto-panel">
+      <div id="ai-howto-header">
+        <span>Como pedir um projeto pra IA</span>
+        <button id="ai-howto-close" type="button">&times;</button>
+      </div>
+      <div id="ai-howto-body">
+        <p class="co-hint">Copia o texto abaixo e manda pro Claude (ou outra IA) junto com o exemplo de project.json, pra ele gerar um zip que esse editor importa de primeira.</p>
+        <textarea id="ai-howto-prompt" readonly rows="7">Me gera o projeto em formato zip: preciso de um arquivo {nome-do-projeto}.project.json com toda a timeline (clipes, c&#226;mera, textos, &#225;udio) + uma pasta assets/ com as imagens e &#225;udios usados, tudo dentro de um &#250;nico .zip. N&#227;o quero o MP4 renderizado nem HTML do projeto &#8212; s&#243; o project.json + os assets, pra eu importar no editor e continuar editando l&#225;.</textarea>
+        <div id="ai-howto-actions">
+          <button id="ai-howto-copy" type="button">Copiar texto</button>
+          <a id="ai-howto-download" href="exemplo.project.json" download="exemplo.project.json">Baixar exemplo de project.json</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js?v=4"></script>
+  <script src="projects.js?v=6"></script>
+</body>
+</html>

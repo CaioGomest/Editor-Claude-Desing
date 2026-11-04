@@ -1,0 +1,1949 @@
+:root { color-scheme: dark; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #0a0a0a;
+  color: #ddd;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  overflow-x: hidden;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* mobile browsers: excludes the address bar, avoids clipping the bottom bars */
+}
+
+/* Desktop: stage + toolbar in a main column, the camera/text panels docked
+   as a narrow side panel next to it (not stacked full-width below) — this
+   is the part that reads as "the CapCut layout" at a glance. Collapses back
+   to the original full-width stacked arrangement on narrow/short viewports
+   (phone, phone landscape) in the media queries further down. */
+#editor-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+#editor-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#side-panel {
+  width: 230px;
+  flex-shrink: 0;
+  min-height: 0;
+  background: #141414;
+  border-left: 1px solid #262626;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+#preview-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#stage-outer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#stage-frame {
+  position: relative;
+  transform-origin: center center;
+  box-shadow: 0 0 0 1px #222, 0 20px 60px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+}
+
+#stage {
+  position: absolute;
+  inset: 0;
+}
+
+#stage-interact {
+  position: absolute;
+  inset: 0;
+  cursor: default;
+  /* #stage has no z-index of its own, so it never forms a stacking context —
+     the positive z-index values on its rendered track content (e.g. the
+     image track's z:10) would otherwise paint above this layer and swallow
+     every click before it ever reaches stage-interact's own handlers. */
+  z-index: 100;
+}
+
+#stage-interact.editable {
+  cursor: grab;
+}
+
+#stage-interact.editable:active {
+  cursor: grabbing;
+}
+
+#focus-handle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(200, 32, 42, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+}
+
+#focus-handle:active {
+  cursor: grabbing;
+}
+
+/* Marks the anchor corner (bottom-left) of the selected text card — drag it
+   to move box.left/box.bottom. Square (vs. focus-handle's circle) so the two
+   are never confused when only one can be visible at a time. */
+#title-position-handle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  /* left/top (set from JS) target the box's bottom-left anchor point —
+     shift the square fully above it so that corner sits exactly there. */
+  margin: -18px 0 0 0;
+  border: 2px solid #fff;
+  background: rgba(122, 90, 200, 0.6);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+}
+
+#title-position-handle:active {
+  cursor: grabbing;
+}
+
+#transport {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #141414;
+  border-top: 1px solid #262626;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+#back-to-projects {
+  color: #999;
+  text-decoration: none;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid #333;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+#back-to-projects:hover {
+  color: #ddd;
+  border-color: #555;
+}
+
+#play-btn {
+  width: 32px;
+  height: 28px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+#play-btn:hover { background: #2a2a2a; }
+
+#scrub {
+  flex: 1;
+  min-width: 0; /* <input> has a non-zero intrinsic min-width by default —
+                   without this it refuses to shrink below it, and the side
+                   panel narrowing #transport's available width overflows
+                   the row, pushing later buttons out and under the panel. */
+  accent-color: #c8202a;
+}
+
+#time-field {
+  width: 80px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#duration-label {
+  color: #888;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+#save-btn,
+#download-zip-btn {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#save-btn { margin-left: auto; }
+
+#save-btn:hover,
+#download-zip-btn:hover { background: #2a2a2a; }
+
+#save-status {
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+/* Icon toolbar (CapCut-style) — quick entry points into the panels below */
+#tool-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 14px;
+  background: #141414;
+  border-top: 1px solid #262626;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 56px;
+  padding: 7px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+  color: #8c8c8c;
+  font-family: inherit;
+  font-size: 9.5px;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.tool-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.tool-btn:hover { color: #ddd; background: #1f1f1f; }
+
+.tool-btn.open,
+.tool-btn:focus-visible {
+  color: #c8202a;
+  background: rgba(200, 32, 42, 0.12);
+  border-color: rgba(200, 32, 42, 0.4);
+}
+
+.tool-sep {
+  width: 1px;
+  align-self: stretch;
+  background: #262626;
+  margin: 2px 6px;
+  flex-shrink: 0;
+}
+
+#side-panel-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8c8c8c;
+  font-weight: 600;
+  padding: 16px 14px 0;
+  flex-shrink: 0;
+}
+
+.panel-section {
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.co-hint {
+  color: #8c8c8c;
+  font-size: 11.5px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Inside the narrow side panel, fields stack one per row (label + value on
+   top, full-width slider below) instead of wrapping several per row — the
+   layout the approved mockup actually showed. */
+#side-panel .co-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 16px 14px;
+}
+
+#side-panel .co-field {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 8px;
+  width: 100%;
+}
+
+#side-panel .co-field label { order: 1; flex: 1; }
+
+#side-panel .co-field input[type='number'] {
+  order: 2;
+  background: none;
+  border: none;
+  color: #c8202a;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-align: right;
+  width: auto;
+  max-width: 64px;
+  padding: 0;
+}
+
+#side-panel .co-field input[type='range'] {
+  order: 3;
+  width: 100%;
+  margin: 0;
+}
+
+#side-panel .co-keyframe,
+#side-panel .co-info,
+#side-panel #swap-image-btn,
+#side-panel .to-field {
+  width: 100%;
+}
+
+#side-panel .to-field input[type='text'] { width: 100%; box-sizing: border-box; }
+
+#clip-options-empty,
+#title-options-empty,
+#audio-options-empty {
+  padding: 16px 14px;
+}
+
+#clip-options-empty {
+  color: #666;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.co-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  row-gap: 8px;
+}
+
+.co-info {
+  color: #aaa;
+  font-size: 12px;
+  white-space: nowrap;
+  padding-bottom: 5px;
+}
+
+.co-field,
+.co-keyframe {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.co-field label,
+.co-keyframe label {
+  font-size: 10px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.co-field input[type='range'] {
+  width: 90px;
+  accent-color: #c8202a;
+}
+
+.co-field input[type='number'] {
+  width: 60px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.co-toggle {
+  display: flex;
+  border: 1px solid #333;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.co-kf-btn {
+  background: #1a1a1a;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.co-kf-btn + .co-kf-btn { border-left: 1px solid #333; }
+
+.co-kf-btn:hover { background: #232323; }
+
+.co-kf-btn.active {
+  background: #c8202a;
+  color: #fff;
+}
+
+#swap-image-btn {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  align-self: center;
+}
+
+#swap-image-btn:hover:not(:disabled) { background: #2a2a2a; }
+
+#swap-image-btn:disabled {
+  color: #555;
+  cursor: default;
+  border-color: #262626;
+}
+
+#title-options-empty {
+  color: #666;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.to-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.to-field label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.to-field-text input[type='text'] {
+  width: 200px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.to-field input[type='number'],
+.to-field select {
+  width: 70px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.to-group-label {
+  display: block;
+  margin: 14px 0 2px;
+  font-size: 10px;
+  color: #c8202a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.to-group-label:first-child { margin-top: 0; }
+
+/* Text clip's title/sub, made editable in place on double-click (see
+   startTitleTextEdit in app.js) — pointer-events is normally 'none' on
+   these (renderer.js) so clicks fall through to the stage's drag/select
+   handling; flip it back on only while actively being typed into. */
+.sr-text-hit[contenteditable='true'] {
+  pointer-events: auto;
+  outline: 1px dashed rgba(200, 32, 42, 0.8);
+  outline-offset: 6px;
+  cursor: text;
+}
+
+#title-remove-btn {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #d98a8a;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  align-self: center;
+}
+
+#title-remove-btn:hover { background: #2a1a1a; border-color: #5a3030; }
+
+#transition-bulk-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#side-panel #transition-bulk-apply,
+#side-panel #transition-bulk-clear,
+#side-panel #audio-options-remove-btn {
+  width: 100%;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+#side-panel #transition-bulk-apply:hover,
+#side-panel #transition-bulk-clear:hover,
+#side-panel #audio-options-remove-btn:hover { background: #2a2a2a; }
+
+#side-panel #transition-bulk-apply {
+  background: #2a1414;
+  border-color: #5a3030;
+}
+
+#side-panel #transition-bulk-apply:hover { background: #3a1a1a; }
+
+#audio-options-empty {
+  color: #666;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+/* Unified timeline — one continuous block (ruler + the three strips) with
+   one outer border, instead of each strip carrying its own border-top and
+   reading as a separate, disconnected widget. */
+#timeline {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #262626;
+  flex-shrink: 0;
+}
+
+#timeline-ruler {
+  position: relative;
+  height: 20px;
+  background: #141414;
+  border-bottom: 1px solid #221f1f;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+#timeline-ruler-track {
+  position: relative;
+  min-width: 100%;
+  height: 100%;
+}
+
+.timeline-ruler-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 9px;
+  color: #6b6558;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid #262626;
+  white-space: nowrap;
+}
+
+/* Pinned row-type icon at the left of each strip — sits above the track
+   (which scrolls underneath it) so it stays put during horizontal scroll. */
+.strip-row-icon {
+  position: sticky;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 6;
+  width: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: inherit;
+  color: #6b6558;
+}
+
+.strip-row-icon svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+}
+
+#clip-strip {
+  position: relative;
+  height: 76px;
+  background: #101010;
+  flex-shrink: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#clip-strip-track {
+  position: relative;
+  min-width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.clip-block {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a1a;
+  border: 1px solid #2c2c2c;
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: grab;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.clip-block.dragging,
+.audio-block.dragging {
+  cursor: grabbing;
+  opacity: 0.6;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.clip-block:hover {
+  border-color: #555;
+}
+
+.clip-block.active {
+  border-color: #c8202a;
+  box-shadow: 0 0 0 1px #c8202a inset;
+}
+
+.clip-block.selected {
+  border-color: #f2f2f2;
+  box-shadow: 0 0 0 1px #f2f2f2 inset;
+}
+
+.clip-block.active.selected {
+  border-color: #f2f2f2;
+  box-shadow: 0 0 0 1px #f2f2f2 inset, 0 0 0 3px rgba(200, 32, 42, 0.6) inset;
+}
+
+.clip-block-label {
+  position: absolute;
+  left: 4px;
+  bottom: 3px;
+  right: 4px;
+  font-size: 10px;
+  color: #eee;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* Trim handles (CapCut-style) — only shown on the selected clip block, one
+   at each edge. Dragging one changes that clip's duration; see
+   makeClipResizable() / commitClipResize() in app.js for the chain math. */
+.clip-handle {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  cursor: ew-resize;
+  z-index: 15;
+  touch-action: none;
+}
+
+.clip-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 22px;
+  transform: translate(-50%, -50%);
+  background: #f2f2f2;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.clip-handle:hover::after,
+.clip-block.resizing .clip-handle::after {
+  background: #c8202a;
+}
+
+.clip-handle-left { left: 0; }
+.clip-handle-right { right: 0; }
+
+.clip-block.selected .clip-handle {
+  display: block;
+}
+
+.clip-block.resizing {
+  z-index: 20;
+}
+
+/* The transition "object" sitting on the cut between two clips — a bowtie
+   (two triangles facing each other) is the conventional crossfade glyph.
+   Click toggles a fade on/off at that cut; scroll fine-tunes its length. */
+.transition-marker {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  cursor: pointer;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transition-marker::before,
+.transition-marker::after {
+  content: '';
+  width: 7px;
+  height: 9px;
+  background: #777;
+}
+
+.transition-marker::before { clip-path: polygon(0 0, 100% 50%, 0 100%); margin-right: -1px; }
+.transition-marker::after { clip-path: polygon(100% 0, 0 50%, 100% 100%); margin-left: -1px; }
+
+.transition-marker:hover { border-color: #888; }
+
+.transition-marker.active {
+  border-color: #c8202a;
+  background: #2a1414;
+}
+
+.transition-marker.active::before,
+.transition-marker.active::after {
+  background: #c8202a;
+}
+
+#clip-strip-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #f2f2f2;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* A small grabbable tab at the very top of a strip's playhead line — lets
+   you drag to scrub the video directly from the timeline, while the rest of
+   the thin line stays click-through (pointer-events: none on the parent) so
+   it never steals clicks/drags meant for the clips underneath it. Shared
+   look across all three strips (clip/titles/audio), since their lines now
+   stay scroll-synced and dragging any one of them moves them all together. */
+.strip-playhead-grip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  background: #f2f2f2;
+  border-radius: 0 0 5px 5px;
+  cursor: grab;
+  pointer-events: auto;
+  z-index: 6;
+}
+
+.strip-playhead-grip:hover {
+  background: #fff;
+}
+
+.strip-playhead-grip:active {
+  cursor: grabbing;
+}
+
+#asset-picker {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#asset-picker:not([hidden]) {
+  display: flex;
+}
+
+#asset-picker-panel {
+  width: min(680px, 90vw);
+  max-height: 80vh;
+  background: #161616;
+  border: 1px solid #2c2c2c;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#asset-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+  color: #ddd;
+}
+
+#asset-picker-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#asset-picker-close:hover { color: #eee; }
+
+#asset-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.asset-thumb {
+  cursor: pointer;
+  border: 1px solid #2c2c2c;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #101010;
+}
+
+.asset-thumb:hover { border-color: #c8202a; }
+
+.asset-thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.asset-thumb-label {
+  padding: 4px 6px;
+  font-size: 11px;
+  color: #bbb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.asset-thumb.upload-tile {
+  border: 1px dashed #444;
+  background: #141414;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  gap: 4px;
+}
+
+.asset-thumb.upload-tile:hover { border-color: #c8202a; }
+
+.upload-tile-icon {
+  font-size: 22px;
+  color: #777;
+  line-height: 1;
+}
+
+.asset-thumb.upload-tile:hover .upload-tile-icon { color: #c8202a; }
+
+.asset-thumb.upload-tile .asset-thumb-label {
+  padding: 0;
+  color: #999;
+}
+
+/* Projects page */
+
+#projects-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Full-bleed header bar, like the artifact — not inset in the same centered
+   column as the grid below it. */
+#projects-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  background: #141414;
+  border-bottom: 1px solid #262626;
+}
+
+#projects-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #eee;
+}
+
+#projects-brand-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c8202a;
+  flex-shrink: 0;
+}
+
+#projects-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#import-status {
+  color: #888;
+  font-size: 12px;
+}
+
+#import-zip-btn {
+  background: #c8202a;
+  border: 1px solid #c8202a;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 11.5px;
+}
+
+#import-zip-btn:hover { background: #a91a23; }
+
+#projects-count {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px clamp(20px, 4vw, 40px) 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: #6b6558;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#projects-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px clamp(20px, 4vw, 40px) 60px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.projects-empty {
+  grid-column: 1 / -1;
+  color: #666;
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.project-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #141414;
+  border: 1.5px solid #262626;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.project-card:hover { border-color: #c8202a; }
+
+/* Footer row: export count on the left, the three action tiles on the
+   right — a fixed row every card has, not icons floating over the
+   thumbnail only revealed on hover. */
+.project-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #222;
+}
+
+.project-card-footer-count {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: #8c8c8c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.project-card-export,
+.project-card-rename,
+.project-card-delete {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #2a2a2a;
+  background: #1b1b1b;
+  color: #8c8c8c;
+  cursor: pointer;
+  padding: 0;
+}
+
+.project-card-export svg,
+.project-card-rename svg,
+.project-card-delete svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.project-card-export:hover {
+  background: #2a4a3a;
+  border-color: #3d6b55;
+  color: #fff;
+}
+
+.project-card-rename:hover {
+  background: #2a2a2a;
+  border-color: #555;
+  color: #fff;
+}
+
+.project-card-delete:hover {
+  background: #c8202a;
+  border-color: #c8202a;
+  color: #fff;
+}
+
+.project-card-thumb {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  background: linear-gradient(145deg, #241a1a, #0a0a0a 70%);
+  background-size: cover;
+  background-position: center;
+}
+
+.project-card-tag,
+.project-card-duration {
+  position: absolute;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: rgba(10, 10, 10, 0.65);
+}
+
+.project-card-tag {
+  top: 8px;
+  left: 8px;
+  font-weight: 700;
+  color: #c8202a;
+  letter-spacing: 0.04em;
+}
+
+.project-card-duration {
+  bottom: 8px;
+  right: 8px;
+  color: #e9e9e9;
+}
+
+.project-card-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.project-card-export-file {
+  color: #8fbfa8;
+  font-size: 11px;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.project-card-export-file:hover { color: #c8ead6; text-decoration: underline; }
+
+.project-card-title {
+  font-size: 13px;
+  color: #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card-meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #888;
+}
+
+/* Titles (text overlay) strip */
+
+#titles-strip {
+  position: relative;
+  height: 40px;
+  background: #17131f;
+  flex-shrink: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#titles-strip-track {
+  position: relative;
+  min-width: 100%;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.title-block {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  background: #2a2040;
+  border: 1px solid #4a3a70;
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: grab;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 8px;
+  touch-action: none;
+}
+
+.title-block:hover { border-color: #7a5ac8; }
+
+.title-block.selected {
+  border-color: #9a7ae0;
+  box-shadow: 0 0 0 1px #9a7ae0 inset;
+}
+
+.title-block.dragging {
+  cursor: grabbing;
+  opacity: 0.6;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.title-block.resizing { z-index: 20; }
+
+/* Reuse the same .clip-handle markup/JS as the image strip; just add the
+   selected-parent rule this track needs (see .clip-block.selected above). */
+.title-block.selected .clip-handle { display: block; }
+
+.title-block-label {
+  font-size: 11px;
+  color: #d6cdec;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  pointer-events: none;
+}
+
+.title-block-remove {
+  display: none;
+  background: none;
+  border: none;
+  color: #d98a8a;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.title-block.selected .title-block-remove { display: block; }
+
+.title-block-remove:hover { color: #f2a0a0; }
+
+.title-add-tile {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 90px;
+  border: 1px dashed #4a3a70;
+  border-radius: 3px;
+  background: #150f22;
+  color: #9a7ae0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.title-add-tile:hover { border-color: #9a7ae0; color: #c0aef2; }
+
+#titles-strip-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #f2f2f2;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Audio strip */
+
+#audio-strip {
+  position: relative;
+  height: 46px;
+  background: #0d1210;
+  flex-shrink: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+#audio-strip-track {
+  position: relative;
+  min-width: 100%;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+.audio-block {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  background: #1a3a30;
+  border: 1px solid #2f5548;
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: grab;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 8px;
+  touch-action: none;
+}
+
+.audio-block:hover { border-color: #4a8a72; }
+
+.audio-block.selected {
+  border-color: #39c88f;
+  box-shadow: 0 0 0 1px #39c88f inset;
+}
+
+.audio-block-label {
+  font-size: 11px;
+  color: #cfece1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.audio-block-controls {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.audio-block.selected .audio-block-controls { display: flex; }
+
+.audio-block-controls input[type='range'] {
+  width: 60px;
+  accent-color: #39c88f;
+}
+
+.audio-block-remove {
+  background: none;
+  border: none;
+  color: #d98a8a;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.audio-block-remove:hover { color: #f2a0a0; }
+
+.audio-add-tile {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 90px;
+  border: 1px dashed #2f5548;
+  border-radius: 3px;
+  background: #0f1714;
+  color: #6fae95;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.audio-add-tile:hover { border-color: #39c88f; color: #39c88f; }
+
+#audio-strip-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #f2f2f2;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Effects panel */
+
+#fx-panel .fx-row {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#fx-panel .fx-field input[type='range'] {
+  width: 100%;
+}
+
+#fx-panel .fx-field input[type='number'],
+#fx-panel .fx-field select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fx-row {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  row-gap: 8px;
+  padding: 6px 14px;
+  border-top: 1px solid #1c1c1c;
+}
+
+.fx-row:not([hidden]) {
+  display: flex;
+}
+
+.fx-row:first-child { border-top: none; }
+
+.fx-row-label {
+  align-self: center;
+  font-size: 10px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.fx-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fx-field label {
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fx-field input[type='range'] {
+  width: 90px;
+  accent-color: #c8202a;
+}
+
+.fx-field input[type='number'],
+.fx-field select {
+  width: 90px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.fx-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #bbb;
+  align-self: center;
+  cursor: pointer;
+}
+
+.fx-toggle input { accent-color: #c8202a; }
+
+#fx-layers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.fx-layer-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1a1a1a;
+  border: 1px solid #2c2c2c;
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.fx-layer-chip:hover { border-color: #555; }
+
+.fx-layer-chip.selected {
+  border-color: #c8202a;
+  color: #eee;
+}
+
+.fx-layer-chip input { accent-color: #c8202a; }
+
+.fx-layer-chip span {
+  cursor: pointer;
+}
+
+/* The one primary/red CTA in the transport bar — matches the approved
+   mockup, where Exportar is visually distinct from Salvar/Baixar ZIP. */
+#export-btn {
+  background: #c8202a;
+  border: 1px solid #c8202a;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#export-btn:hover { background: #e2404a; border-color: #e2404a; }
+
+#export-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#export-modal:not([hidden]) { display: flex; }
+
+#export-panel {
+  width: min(460px, 90vw);
+  max-height: 90vh;
+  background: #161616;
+  border: 1px solid #2c2c2c;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+#export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+  color: #ddd;
+}
+
+#export-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#export-close:hover { color: #eee; }
+
+#export-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#export-scale {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 5px 6px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#export-res-label {
+  color: #888;
+  font-size: 12px;
+}
+
+#export-hint {
+  margin: 0;
+  color: #888;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#export-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#export-actions button {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#export-actions button:hover { background: #2a2a2a; }
+
+#ai-howto-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #999;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#ai-howto-btn:hover { background: #2a2a2a; color: #ddd; border-color: #c8202a; }
+
+#ai-howto-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#ai-howto-modal:not([hidden]) { display: flex; }
+
+#ai-howto-panel {
+  width: min(520px, 90vw);
+  max-height: 90vh;
+  background: #161616;
+  border: 1px solid #2c2c2c;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+#ai-howto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+  color: #ddd;
+}
+
+#ai-howto-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#ai-howto-close:hover { color: #eee; }
+
+#ai-howto-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#ai-howto-prompt {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 8px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+#ai-howto-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#ai-howto-actions button,
+#ai-howto-actions a {
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+#ai-howto-actions button:hover,
+#ai-howto-actions a:hover { background: #2a2a2a; }
+
+#download-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#download-modal:not([hidden]) { display: flex; }
+
+#download-panel {
+  width: min(460px, 90vw);
+  max-height: 90vh;
+  background: #161616;
+  border: 1px solid #2c2c2c;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+#download-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid #262626;
+  font-size: 13px;
+  color: #ddd;
+}
+
+#download-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#download-close:hover { color: #eee; }
+
+#download-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.download-section-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c8202a;
+  margin-bottom: 8px;
+}
+
+#download-mp4-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#download-zip-btn {
+  margin-top: 8px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #ddd;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#download-zip-btn:hover { background: #2a2a2a; }
+
+#export-sequence-btn {
+  background: #2a4a3a;
+  border-color: #3d6b55;
+}
+
+#export-sequence-btn:hover { background: #335844; }
+
+#export-cancel-btn {
+  border-color: #c8202a;
+  color: #f2a0a0;
+}
+
+#export-status {
+  color: #6fae95;
+  font-size: 12px;
+  min-height: 16px;
+  white-space: pre-wrap;
+}
+
+#export-history {
+  border-top: 1px solid #2a2a2a;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#export-history-title {
+  color: #aaa;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#export-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.export-history-empty {
+  color: #666;
+  font-size: 12px;
+}
+
+.export-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 8px;
+  background: #1a1a1a;
+  border: 1px solid #2c2c2c;
+  border-radius: 3px;
+  color: #ddd;
+  text-decoration: none;
+}
+
+.export-history-item:hover {
+  border-color: #3d6b55;
+  background: #1c2420;
+}
+
+.export-history-name {
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.export-history-meta {
+  color: #888;
+  font-size: 11px;
+}
+
+/* Responsive: narrow screens (phones, incl. landscape) */
+
+@media (max-width: 700px) {
+  /* Not enough width for stage + a 280px side panel side by side — back to
+     the original full-width stacked arrangement (also keeps phone portrait
+     usable, which the side-by-side layout was never meant to serve). */
+  #editor-body { flex-direction: column; }
+  #side-panel { width: 100%; border-left: none; border-top: 1px solid #262626; }
+  #side-panel .co-row { flex-direction: row; flex-wrap: wrap; }
+  #side-panel .co-field { width: auto; flex-direction: column; align-items: flex-start; }
+  #side-panel .co-field label { order: 0; }
+  #side-panel .co-field input[type='number'] { order: 1; color: #ddd; font-weight: 400; text-align: left; }
+  #side-panel .co-field input[type='range'] { order: 2; width: 64px; }
+
+  #back-to-projects { font-size: 11px; padding: 4px 6px; }
+  #duration-label { display: none; }
+
+  .fx-field input[type='range'],
+  .co-field input[type='range'] {
+    width: 64px;
+  }
+
+  .fx-field input[type='number'],
+  .fx-field select,
+  .co-field input[type='number'] {
+    width: 52px;
+  }
+
+  #export-panel, #asset-picker-panel { width: min(340px, 92vw); }
+  .asset-thumb.upload-tile, .asset-thumb { aspect-ratio: unset; }
+  #asset-picker-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+}
+
+/* Responsive: short viewports (phone in landscape) — compress the chrome
+   so the preview itself still gets most of the available height. */
+@media (max-height: 500px) {
+  #transport { padding: 4px 10px; gap: 8px; }
+  #save-status { min-width: 0; }
+
+  #tool-toolbar { padding: 3px 8px; }
+  .tool-btn { min-width: 40px; padding: 4px 3px; font-size: 8px; }
+  .tool-btn svg { width: 14px; height: 14px; }
+
+  #timeline-ruler { height: 14px; }
+  .timeline-ruler-tick { font-size: 8px; padding-left: 4px; }
+  .strip-row-icon { width: 16px; }
+  .strip-row-icon svg { width: 10px; height: 10px; }
+
+  .fx-row, .co-row { padding: 4px 10px; gap: 8px; row-gap: 5px; }
+  .fx-field label, .co-field label, .co-keyframe label, .fx-row-label { font-size: 9px; }
+  .fx-field input[type='range'], .co-field input[type='range'] { width: 56px; }
+
+  #clip-options-empty { line-height: 14px; font-size: 11px; }
+
+  #clip-strip { height: 52px; }
+  .clip-block { top: 4px; bottom: 4px; }
+  .clip-block-label { font-size: 9px; bottom: 2px; }
+
+  #audio-strip { height: 32px; }
+  .audio-block { padding: 0 5px; gap: 4px; }
+  .audio-block-label { font-size: 10px; }
+  .audio-block-controls input[type='range'] { width: 40px; }
+
+  #titles-strip { height: 30px; }
+  .title-block { padding: 0 5px; gap: 4px; }
+  .title-block-label { font-size: 10px; }
+  .to-field-text input[type='text'] { width: 140px; }
+
+  #asset-picker-panel, #export-panel { max-height: 90vh; }
+  #asset-picker-grid { max-height: 50vh; }
+}

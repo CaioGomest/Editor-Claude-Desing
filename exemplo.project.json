@@ -1,0 +1,214 @@
+{
+  "$schema": "./scp-motion.schema.json",
+  "version": 1,
+  "meta": {
+    "id": "scp966-short3",
+    "title": "SCP-966 Short 3 — A Regra",
+    "note": "Fecha em silencio visual: sem glitch, sem pico no final."
+  },
+  "canvas": { "width": 1080, "height": 1920, "fps": 30, "background": "#020303" },
+  "duration": 32.6,
+  "assets": {
+    "basePath": "assets/",
+    "prefix": "L966-",
+    "images": [
+      { "id": "patch-iota", "file": "patch-iota.jpg" },
+      { "id": "carne", "file": "carne.jpg", "burnedHud": true },
+      { "id": "cela", "file": "cela.jpg", "burnedHud": true },
+      { "id": "quarto", "file": "quarto.jpg", "burnedHud": true },
+      { "id": "ir", "file": "ir.webp" }
+    ],
+    "audio": []
+  },
+  "theme": {
+    "colors": { "red": "#c8202a", "ink": "#ffffff", "dim": "rgba(228,228,228,0.7)" },
+    "fonts": {
+      "head": "'Archivo Black', 'Arial Black', sans-serif",
+      "mono": "'JetBrains Mono', ui-monospace, monospace"
+    },
+    "googleFonts": ["Archivo Black", "JetBrains Mono:wght@400;700"]
+  },
+
+  "scenes": [
+    { "id": "s1", "name": "Iota",        "dur": 4.6, "desc": "Insignia da forca-tarefa Iota" },
+    { "id": "s2", "name": "Alimentadas", "dur": 5.0, "desc": "Prato de carne na escotilha blindada" },
+    { "id": "s3", "name": "Arma",        "dur": 4.4, "desc": "Camara de testes vazia, luz vermelha" },
+    { "id": "s4", "name": "Arsenal",     "dur": 3.6, "desc": "Cartela: NAO E CONTENCAO. E UM ARSENAL." },
+    { "id": "s5", "name": "Quarto",      "dur": 4.8, "desc": "Quarto escuro, cama vazia" },
+    { "id": "s6", "name": "Despertador", "dur": 5.6, "desc": "Apagao, so o despertador piscando" },
+    { "id": "s7", "name": "CTA",         "dur": 4.6, "desc": "CTA padrao do canal" }
+  ],
+  "playback": { "mode": "times", "count": 2 },
+
+  "tracks": [
+    {
+      "id": "plate",
+      "kind": "image",
+      "label": "Imagem de fundo",
+      "z": 10,
+      "clips": [
+        {
+          "id": "p1", "asset": "patch-iota", "start": 0.0, "end": 4.6,
+          "fit": "cover", "objectPosition": "50% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.06, "to": 1.24, "ease": "linear" }, "panX": { "from": 0, "to": 2 }, "offsetX": 0, "offsetY": 0 }
+        },
+        {
+          "id": "p2", "asset": "carne", "start": 4.6, "end": 9.6,
+          "fit": "cover", "objectPosition": "52% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.05, "to": 1.20 }, "panX": { "from": 0, "to": -3 } }
+        },
+        {
+          "id": "p3", "asset": "cela", "start": 9.6, "end": 14.0,
+          "fit": "cover", "objectPosition": "52% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.06, "to": 1.26 }, "panX": { "from": 0, "to": 3 } }
+        },
+        {
+          "id": "p4", "asset": "cela", "start": 14.0, "end": 17.6,
+          "fit": "cover", "objectPosition": "52% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.34, "to": 1.44 }, "panX": { "from": 0, "to": 0 } },
+          "filter": { "grayscale": 0.5, "contrast": 1.05, "brightness": 0.34, "blur": 10 }
+        },
+        {
+          "id": "p5", "asset": "quarto", "start": 17.6, "end": 22.4,
+          "fit": "cover", "objectPosition": "46% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.06, "to": 1.22 }, "panX": { "from": 0, "to": 2 } }
+        },
+        {
+          "id": "p6", "asset": "quarto", "start": 22.4, "end": 28.0,
+          "fit": "cover", "objectPosition": "100% 50%", "fadeIn": 0.3,
+          "camera": { "zoom": { "from": 1.70, "to": 1.86 }, "panX": { "from": 0, "to": -3 }, "offsetX": -37 }
+        }
+      ]
+    },
+
+    {
+      "id": "titles",
+      "kind": "text",
+      "label": "Cartelas",
+      "z": 50,
+      "clips": [
+        {
+          "id": "t1", "start": 14.1, "end": 17.5,
+          "text": "NÃO É CONTENÇÃO.",
+          "sub": "É UM ARSENAL.",
+          "box": { "left": 110, "right": 110, "top": "36%" },
+          "align": "center",
+          "style": { "font": "head", "size": 112, "lineHeight": 1.02, "color": "#ffffff", "shadow": "0 8px 44px rgba(0,0,0,0.95)" },
+          "subStyle": { "font": "mono", "weight": 700, "size": 52, "letterSpacing": "0.1em", "color": "@red", "delay": 0.5 },
+          "rule": { "height": 6, "width": 260, "color": "@red", "growFrom": 0.15, "growTo": 1.1 },
+          "in": { "kind": "riseFade", "dy": 24, "dur": 0.55, "ease": "easeOutQuint" },
+          "out": { "kind": "fade", "dur": 0.3 }
+        }
+      ]
+    },
+
+    {
+      "id": "captions",
+      "kind": "captions",
+      "label": "Legendas",
+      "z": 80,
+      "enabled": false,
+      "style": {
+        "box": { "left": 110, "right": 110, "bottom": 560 },
+        "align": "center", "font": "mono", "weight": 700, "size": 48,
+        "lineHeight": 1.26, "color": "#f6f6f6", "shadow": "0 6px 30px rgba(0,0,0,0.95)"
+      },
+      "clips": [
+        { "id": "c1", "start": 0.3,  "end": 4.4,  "text": "DUAS FORÇAS-TAREFA SÓ PRA CAÇAR E MATAR ESSA ESPÉCIE" },
+        { "id": "c2", "start": 4.8,  "end": 9.4,  "text": "E QUATRO INSTÂNCIAS VIVAS, ALIMENTADAS, GUARDADAS" },
+        { "id": "c3", "start": 9.8,  "end": 13.8, "text": "PRONTAS PRA SEREM USADAS COMO ARMA CONTRA OUTRAS ANOMALIAS" },
+        { "id": "c4", "start": 17.8, "end": 22.2, "text": "SE FAZ DIAS QUE VOCÊ NÃO CONSEGUE DORMIR DIREITO" },
+        { "id": "c5", "start": 22.6, "end": 27.6, "text": "NÃO É INSÔNIA. SÓ REZE PRA QUE SEJA." }
+      ]
+    },
+
+    {
+      "id": "fx",
+      "kind": "effects",
+      "label": "Efeitos",
+      "layers": [
+        {
+          "id": "vignette", "type": "vignette", "label": "Vinheta", "z": 57, "enabled": true,
+          "params": { "shape": "115% 68% at 50% 45%", "inner": 0.30, "color": "#000000", "opacity": 0.86 },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "scanlines", "type": "scanlines", "label": "Scanlines", "z": 58, "enabled": true,
+          "params": { "gap": 3, "thickness": 3, "period": 6, "color": "rgba(0,0,0,0.42)", "opacity": 0.46, "scrollSpeed": 52 },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "sweep", "type": "sweep", "label": "Varredura CRT", "z": 59, "enabled": true,
+          "params": { "height": 300, "speed": 380, "color": "rgba(255,255,255,0.045)" },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "grain", "type": "grain", "label": "Grão", "z": 60, "enabled": true,
+          "params": { "tile": 220, "baseFrequency": 0.85, "octaves": 3, "opacity": 0.09, "blend": "overlay", "opacityPerK": 0.014 },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "glitch", "type": "glitch", "label": "Glitch", "z": 61, "enabled": true,
+          "params": { "bands": 4, "intensity": 0, "hz": 7, "maxShift": 60, "shiftPerK": 22, "colorA": "rgba(255,255,255,0.09)", "colorB": "rgba(200,32,42,0.14)" },
+          "bindTo": "tweak.glitch",
+          "envelope": [{ "t": 0, "v": 1 }]
+        },
+        {
+          "id": "hud", "type": "hud", "label": "HUD / moldura", "z": 62, "enabled": true,
+          "params": {
+            "corners": { "size": 80, "inset": 44, "thickness": 3, "color": "rgba(200,32,42,0.7)" },
+            "hideOverBurnedHud": true,
+            "cells": [
+              { "id": "code",  "at": "topLeft",     "x": 146, "y": 56, "text": "SCP-966", "size": 28, "color": "@red", "weight": 700 },
+              { "id": "file",  "at": "topLeft",     "x": 146, "y": 96, "text": "ARQUIVO IOTA-1", "size": 22, "color": "rgba(200,200,200,0.42)" },
+              { "id": "rec",   "at": "topRight",    "x": 152, "y": 58, "type": "rec", "blinkPeriod": 1.1, "blinkDuty": 0.55, "color": "@red" },
+              { "id": "tc",    "at": "bottomLeft",  "x": 146, "y": 56, "type": "timecode", "offset": "04:02:09", "frameRate": 24, "size": 28 },
+              { "id": "stat",  "at": "bottomLeft",  "x": 146, "y": 96, "type": "keyed", "size": 24, "color": "rgba(200,200,200,0.45)",
+                "keys": [{ "t": 0, "text": "CLASSE: KETER · USO TÁTICO" }, { "t": 17.6, "text": "ORIGEM: FORA DE SÍTIO" }] }
+            ]
+          },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "scrimBottom", "type": "scrim", "label": "Escurecer base", "z": 56, "enabled": true,
+          "params": { "edge": "bottom", "height": 700, "stops": [[0, "rgba(0,0,0,0.9)"], [0.42, "rgba(0,0,0,0.62)"], [1, "rgba(0,0,0,0)"]] },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "scrimTop", "type": "scrim", "label": "Escurecer topo", "z": 56, "enabled": true,
+          "params": { "edge": "top", "height": 300, "stops": [[0, "rgba(0,0,0,0.78)"], [1, "rgba(0,0,0,0)"]] },
+          "envelope": [{ "t": 0, "v": 1 }, { "t": 24.0, "v": 1 }, { "t": 26.6, "v": 0 }]
+        },
+        {
+          "id": "blackout", "type": "spotlight", "label": "Apagão final", "z": 66, "enabled": true,
+          "params": {
+            "shape": "30% 14% at 39% 73%",
+            "stops": [[0, "rgba(0,0,0,0)"], [0.58, "rgba(0,0,0,0.72)"], [1, "rgba(0,0,0,1)"]],
+            "glow": { "shape": "22% 11% at 39% 73%", "color": "rgba(220,36,44,0.6)", "opacity": 0.5, "blend": "screen", "pulsePeriod": 1.0, "pulseDuty": 0.52, "pulseLow": 0.42, "z": 67 }
+          },
+          "envelope": [{ "t": 0, "v": 0 }, { "t": 24.0, "v": 0 }, { "t": 27.2, "v": 1 }],
+          "ease": "easeInOutQuart"
+        }
+      ]
+    },
+
+    {
+      "id": "cta",
+      "kind": "component",
+      "label": "CTA final",
+      "z": 90,
+      "clips": [
+        { "id": "cta1", "start": 28.0, "end": 32.6, "component": "CtaFinal",
+          "props": { "asset": "ir", "objectPosition": "46% 50%" } }
+      ]
+    }
+  ],
+
+  "tweaks": [
+    { "id": "glitch",       "label": "Glitch",        "type": "int",  "min": 0, "max": 10, "step": 1, "default": 0 },
+    { "id": "captions",     "label": "Legendas",      "type": "bool", "default": false },
+    { "id": "motionEditor", "label": "Motion editor", "type": "bool", "default": true }
+  ],
+
+  "easings": ["linear", "easeOutCubic", "easeInOutQuart", "easeOutQuint", "easeInQuad", "easeOutQuad"]
+}
